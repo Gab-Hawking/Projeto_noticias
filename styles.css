@@ -118,35 +118,17 @@ body {
 .filter-toggle:hover { background: rgba(255,255,255,.1); color: #fff; }
 .filter-toggle svg { pointer-events: none; }
 
-/* Header badge (API status) */
-.api-badge {
+/* Free badge */
+.free-badge {
   display: flex; align-items: center; gap: 6px;
   padding: 5px 12px;
   border-radius: var(--radius);
   font-size: 12px; font-weight: 500;
-  transition: all var(--ease);
-}
-.api-badge.configured {
   background: rgba(16,185,129,.15);
   color: #6EE7B7;
   border: 1px solid rgba(16,185,129,.25);
-}
-.api-badge.not-configured {
-  background: rgba(245,158,11,.15);
-  color: #FCD34D;
-  border: 1px solid rgba(245,158,11,.25);
-  cursor: pointer;
-}
-.api-badge.not-configured:hover { background: rgba(245,158,11,.25); }
-.api-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-}
-.api-dot.pulse { animation: pulse 1.8s infinite; }
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: .35; }
+  pointer-events: none;
+  user-select: none;
 }
 
 /* === APP LAYOUT === */
@@ -574,102 +556,7 @@ body {
 
 .btn-full { width: 100%; }
 
-/* === MODAL === */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.45);
-  backdrop-filter: blur(4px);
-  z-index: 200;
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px;
-  animation: fadeIn .2s ease;
-}
-.modal-overlay.hidden { display: none; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-.modal {
-  background: var(--surface);
-  border-radius: var(--radius-lg);
-  width: 100%; max-width: 460px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.25);
-  animation: slideUp .25s cubic-bezier(.4,0,.2,1);
-  overflow: hidden;
-}
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.modal-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 24px 0;
-}
-.modal-header h2 { font-size: 18px; font-weight: 700; color: var(--text-1); }
-.modal-close {
-  width: 30px; height: 30px;
-  display: grid; place-items: center;
-  border-radius: var(--radius-sm);
-  color: var(--text-3); font-size: 16px;
-  transition: all var(--ease);
-}
-.modal-close:hover { background: var(--surface-2); color: var(--text-1); }
-.modal-body { padding: 16px 24px; }
-.modal-body p {
-  font-size: 14px; color: var(--text-3); line-height: 1.6;
-  margin-bottom: 16px;
-}
-.modal-steps {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
-  margin-bottom: 16px;
-}
-.modal-steps li {
-  font-size: 13px; color: var(--text-2); line-height: 1.7;
-  padding-left: 4px;
-  counter-increment: step;
-}
-.modal-steps li::before {
-  content: counter(step) ".";
-  font-weight: 600; color: var(--accent);
-  margin-right: 6px;
-}
-.modal-steps { counter-reset: step; }
-.modal-steps a { color: var(--accent); font-weight: 500; }
-
-.form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group label { font-size: 12px; font-weight: 600; color: var(--text-2); letter-spacing: .3px; }
-.form-group input {
-  padding: 10px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 13.5px; color: var(--text-1);
-  background: var(--surface);
-  transition: border-color var(--ease), box-shadow var(--ease);
-  outline: none;
-}
-.form-group input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(37,99,235,.12);
-}
-.form-group input::placeholder { color: var(--text-4); }
-
-.modal-demo-banner {
-  margin-top: 12px;
-  padding: 10px 14px;
-  background: var(--surface-2);
-  border: 1px dashed var(--border);
-  border-radius: var(--radius-sm);
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  flex-wrap: wrap;
-}
-.modal-demo-banner span { font-size: 13px; color: var(--text-3); }
-
-.modal-footer {
-  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
-  padding: 16px 24px;
-  border-top: 1px solid var(--border-subtle);
-}
+/* (modal removido — app não requer API key) */
 
 /* === TOAST === */
 .toast {
