@@ -173,25 +173,172 @@ function escHtml(str) {
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-/* ── RSS FETCH ───────────────────────────────────────────── */
+/* ── DIRECT RSS FEEDS ────────────────────────────────────── */
+// Feeds diretos por assunto — filtrados por palavras-chave no cliente
+const DIRECT_FEEDS = {
+  politica: [
+    { url: 'http://feeds.bbci.co.uk/news/world/rss.xml',         name: 'BBC World' },
+    { url: 'https://www.theguardian.com/world/rss',               name: 'The Guardian' },
+    { url: 'https://www.aljazeera.com/xml/rss/all.xml',           name: 'Al Jazeera' },
+    { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml', name: 'NY Times' },
+    { url: 'https://feeds.npr.org/1004/rss.xml',                  name: 'NPR Politics' },
+  ],
+  economia: [
+    { url: 'http://feeds.bbci.co.uk/news/business/rss.xml',       name: 'BBC Business' },
+    { url: 'https://www.theguardian.com/business/economics/rss',  name: 'The Guardian' },
+    { url: 'https://feeds.a.dj.com/rss/RSSMarketsMain.xml',       name: 'WSJ Markets' },
+    { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Economy.xml', name: 'NY Times' },
+  ],
+  financas: [
+    { url: 'http://feeds.bbci.co.uk/news/business/rss.xml',       name: 'BBC Business' },
+    { url: 'https://www.theguardian.com/business/markets/rss',    name: 'Guardian Markets' },
+    { url: 'https://feeds.a.dj.com/rss/RSSMarketsMain.xml',       name: 'WSJ Markets' },
+    { url: 'https://feeds.content.dowjones.io/public/rss/mw_realtimeheadlines', name: 'MarketWatch' },
+  ],
+  ia: [
+    { url: 'https://techcrunch.com/feed/',                         name: 'TechCrunch' },
+    { url: 'https://www.theverge.com/rss/index.xml',               name: 'The Verge' },
+    { url: 'https://feeds.arstechnica.com/arstechnica/index',      name: 'Ars Technica' },
+    { url: 'http://feeds.bbci.co.uk/news/technology/rss.xml',      name: 'BBC Tech' },
+    { url: 'https://www.wired.com/feed/rss',                       name: 'Wired' },
+    { url: 'https://venturebeat.com/feed/',                        name: 'VentureBeat' },
+  ],
+  tecnologia: [
+    { url: 'https://techcrunch.com/feed/',                         name: 'TechCrunch' },
+    { url: 'https://www.theverge.com/rss/index.xml',               name: 'The Verge' },
+    { url: 'http://feeds.bbci.co.uk/news/technology/rss.xml',      name: 'BBC Tech' },
+    { url: 'https://feeds.arstechnica.com/arstechnica/index',      name: 'Ars Technica' },
+    { url: 'https://www.wired.com/feed/rss',                       name: 'Wired' },
+    { url: 'https://www.theguardian.com/technology/rss',           name: 'Guardian Tech' },
+  ],
+  saude: [
+    { url: 'http://feeds.bbci.co.uk/news/health/rss.xml',          name: 'BBC Health' },
+    { url: 'https://www.theguardian.com/society/health/rss',       name: 'The Guardian' },
+    { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Health.xml', name: 'NY Times Health' },
+    { url: 'https://feeds.npr.org/1128/rss.xml',                   name: 'NPR Health' },
+    { url: 'https://www.who.int/rss-feeds/news-english.xml',       name: 'WHO' },
+  ],
+  clima: [
+    { url: 'http://feeds.bbci.co.uk/news/science_and_environment/rss.xml', name: 'BBC Science' },
+    { url: 'https://www.theguardian.com/environment/climate-crisis/rss',   name: 'Guardian Climate' },
+    { url: 'https://www.theguardian.com/environment/rss',          name: 'Guardian Environment' },
+    { url: 'https://feeds.npr.org/1025/rss.xml',                   name: 'NPR Environment' },
+    { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Climate.xml', name: 'NY Times Climate' },
+  ],
+  ciencia: [
+    { url: 'http://feeds.bbci.co.uk/news/science_and_environment/rss.xml', name: 'BBC Science' },
+    { url: 'https://www.theguardian.com/science/rss',              name: 'Guardian Science' },
+    { url: 'https://feeds.arstechnica.com/arstechnica/science',    name: 'Ars Technica Science' },
+    { url: 'https://spacenews.com/feed/',                          name: 'SpaceNews' },
+    { url: 'https://www.sciencedaily.com/rss/all.xml',             name: 'Science Daily' },
+    { url: 'https://www.nasa.gov/news-release/feed/',              name: 'NASA' },
+    { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Science.xml', name: 'NY Times Science' },
+  ],
+  esportes: [
+    { url: 'http://feeds.bbci.co.uk/sport/rss.xml',                name: 'BBC Sport' },
+    { url: 'https://www.theguardian.com/sport/rss',                name: 'Guardian Sport' },
+    { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Sports.xml', name: 'NY Times Sports' },
+    { url: 'https://www.espn.com/espn/rss/news',                   name: 'ESPN' },
+    { url: 'https://feeds.skysports.com/SkySports-MoreSports.xml', name: 'Sky Sports' },
+  ],
+  entretenimento: [
+    { url: 'http://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml', name: 'BBC Entertainment' },
+    { url: 'https://variety.com/feed/',                            name: 'Variety' },
+    { url: 'https://www.hollywoodreporter.com/feed/',              name: 'Hollywood Reporter' },
+    { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Arts.xml', name: 'NY Times Arts' },
+    { url: 'https://pitchfork.com/feed/feed-news/rss/',            name: 'Pitchfork' },
+  ],
+  crime: [
+    { url: 'http://feeds.bbci.co.uk/news/world/rss.xml',           name: 'BBC World' },
+    { url: 'https://www.theguardian.com/world/rss',                name: 'The Guardian' },
+    { url: 'https://www.aljazeera.com/xml/rss/all.xml',            name: 'Al Jazeera' },
+    { url: 'https://feeds.npr.org/1003/rss.xml',                   name: 'NPR News' },
+  ],
+};
 
-function buildRSSUrl(subjectQuery, region, afterDate) {
-  const locale = REGION_LOCALE[region?.id] || { hl: 'pt-BR', gl: 'BR', ceid: 'BR:pt-BR' };
-  const parts  = [];
-  if (subjectQuery) parts.push(subjectQuery);
-  if (region?.extraQ) parts.push(`(${region.extraQ})`);
-  if (afterDate) parts.push(`after:${afterDate}`);
-  const q = parts.join(' ') || 'noticias news';
-  const p = new URLSearchParams({ q, ...locale });
-  return `https://news.google.com/rss/search?${p}`;
-}
+// Feeds regionais específicos por país
+const REGION_FEEDS = {
+  br: [
+    { url: 'https://g1.globo.com/rss/g1/',                              name: 'G1 Globo' },
+    { url: 'https://feeds.folha.uol.com.br/emcimadahora/rss091.xml',   name: 'Folha de S.Paulo' },
+    { url: 'https://www.uol.com.br/rss/noticias/',                     name: 'UOL' },
+  ],
+  gb: [
+    { url: 'https://www.theguardian.com/uk/rss',                       name: 'The Guardian UK' },
+    { url: 'http://feeds.bbci.co.uk/news/uk/rss.xml',                  name: 'BBC UK' },
+  ],
+  us: [
+    { url: 'https://feeds.npr.org/1001/rss.xml',                       name: 'NPR' },
+    { url: 'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml', name: 'NY Times' },
+  ],
+  au: [
+    { url: 'http://feeds.bbci.co.uk/news/world/australia/rss.xml',     name: 'BBC Australia' },
+  ],
+  me: [
+    { url: 'https://www.aljazeera.com/xml/rss/all.xml',                name: 'Al Jazeera' },
+    { url: 'https://www.middleeasteye.net/rss',                        name: 'Middle East Eye' },
+  ],
+  af: [
+    { url: 'https://www.aljazeera.com/xml/rss/all.xml',                name: 'Al Jazeera' },
+    { url: 'http://feeds.bbci.co.uk/news/world/africa/rss.xml',        name: 'BBC Africa' },
+  ],
+  cn: [
+    { url: 'http://feeds.bbci.co.uk/news/world/asia/rss.xml',          name: 'BBC Asia' },
+  ],
+  jp: [
+    { url: 'http://feeds.bbci.co.uk/news/world/asia/rss.xml',          name: 'BBC Asia' },
+  ],
+  kr: [
+    { url: 'http://feeds.bbci.co.uk/news/world/asia/rss.xml',          name: 'BBC Asia' },
+  ],
+  eu: [
+    { url: 'http://feeds.bbci.co.uk/news/world/europe/rss.xml',        name: 'BBC Europe' },
+    { url: 'https://www.theguardian.com/world/europe-news/rss',        name: 'Guardian Europe' },
+  ],
+  de: [
+    { url: 'http://feeds.bbci.co.uk/news/world/europe/rss.xml',        name: 'BBC Europe' },
+  ],
+  fr: [
+    { url: 'http://feeds.bbci.co.uk/news/world/europe/rss.xml',        name: 'BBC Europe' },
+  ],
+  sa: [
+    { url: 'http://feeds.bbci.co.uk/news/world/latin_america/rss.xml', name: 'BBC América Latina' },
+  ],
+  am: [
+    { url: 'http://feeds.bbci.co.uk/news/world/latin_america/rss.xml', name: 'BBC América Latina' },
+  ],
+  ar: [
+    { url: 'http://feeds.bbci.co.uk/news/world/latin_america/rss.xml', name: 'BBC América Latina' },
+  ],
+  cl: [
+    { url: 'http://feeds.bbci.co.uk/news/world/latin_america/rss.xml', name: 'BBC América Latina' },
+  ],
+  mx: [
+    { url: 'http://feeds.bbci.co.uk/news/world/latin_america/rss.xml', name: 'BBC América Latina' },
+  ],
+};
+
+// Palavras-chave por assunto (para filtrar feeds diretos no cliente)
+const SUBJECT_KEYWORDS = {
+  politica:       ['politi','govern','election','president','minister','parliament','senator','congress','democra','republic','vote','partido','eleição','governo','presidente'],
+  economia:       ['econom','gdp','gdp','inflation','recession','trade','employment','unemploy','inflação','recessão','crescimento','fiscal','pib'],
+  financas:       ['market','stock','nasdaq','dow jones','s&p','invest','bank','fund','crypto','bitcoin','bolsa','ação','mercado','finanças','hedge'],
+  ia:             ['artificial intelligence','machine learning','chatgpt','openai','llm','gpt','neural','deep learning','inteligência artificial','gemini','claude','anthropic','copilot','ai model','ai '],
+  tecnologia:     ['tech','software','startup','digital','cyber','silicon','smartphone','apple','google','microsoft','amazon','meta','hardware','cloud','chip'],
+  saude:          ['health','medical','hospital','doctor','patient','disease','drug','vaccine','cancer','mental health','clinical','saúde','médico','doença','tratamento','pandemia'],
+  clima:          ['climate','environment','carbon','emission','warming','renewable','fossil','storm','flood','drought','sustainability','green energy','clima','ambiente','aquecimento'],
+  ciencia:        ['science','research','study','space','nasa','planet','star','universe','experiment','discovery','physics','biology','ciência','pesquisa','espaço','descoberta'],
+  esportes:       ['sport','football','soccer','basketball','tennis','olympic','champion','league','player','match','tournament','esporte','futebol','campeonato','jogador','copa'],
+  entretenimento: ['entertainment','film','movie','music','celebrity','award','netflix','oscar','grammy','actor','singer','streaming','filme','música','serie','entretenimento'],
+  crime:          ['crime','police','arrest','murder','court','trial','justice','prison','suspect','investigation','terror','shooting','crime','policia','tribunal','preso'],
+};
+
+/* ── RSS FETCH ───────────────────────────────────────────── */
 
 async function proxyFetch(url) {
   for (const makeProxy of PROXIES) {
     try {
-      const res = await fetch(makeProxy(url), {
-        signal: AbortSignal.timeout(9000),
-      });
+      const res = await fetch(makeProxy(url), { signal: AbortSignal.timeout(9000) });
       if (!res.ok) continue;
       const ct = res.headers.get('content-type') || '';
       if (ct.includes('json')) {
@@ -200,92 +347,195 @@ async function proxyFetch(url) {
       }
       return await res.text();
     } catch {
-      // tenta próximo proxy
+      /* tenta próximo proxy */
     }
   }
-  throw new Error('Sem resposta dos servidores de proxy. Verifique sua conexão ou use o modo demonstração.');
+  return null; // falhou — não lançar para não abortar toda a busca
 }
 
-function parseRSS(xml, regionId, subjectId, imgOffset) {
-  const doc   = new DOMParser().parseFromString(xml, 'text/xml');
-  const items = [...doc.querySelectorAll('item')];
-  return items.map((item, i) => {
-    const rawTitle  = item.querySelector('title')?.textContent?.trim()  || '';
-    const link      = item.querySelector('link')?.textContent?.trim()   || '#';
-    const pubDate   = item.querySelector('pubDate')?.textContent?.trim() || '';
-    const sourceTxt = item.querySelector('source')?.textContent?.trim() || '';
+function parseRSS(xml, opts = {}) {
+  const { regionId = null, subjectId = null, sourceName = null, isGoogleNews = false } = opts;
+  try {
+    const doc   = new DOMParser().parseFromString(xml, 'text/xml');
+    const items = [...doc.querySelectorAll('item')];
+    return items.map(item => {
+      const rawTitle  = item.querySelector('title')?.textContent?.trim()  || '';
+      const link      = item.querySelector('link')?.textContent?.trim()   || '#';
+      const pubDate   = item.querySelector('pubDate')?.textContent?.trim() || '';
+      const srcEl     = item.querySelector('source');
+      const srcName   = srcEl?.textContent?.trim() || sourceName || '';
 
-    // Google News format: "Article Title - Source Name"
-    const sep    = rawTitle.lastIndexOf(' - ');
-    const title  = sep > 0 ? rawTitle.slice(0, sep).trim() : rawTitle;
-    const source = sep > 0 ? rawTitle.slice(sep + 3).trim() : (sourceTxt || 'Notícia');
+      let title  = rawTitle;
+      let source = srcName;
 
-    // Extract any description text (strip HTML tags)
-    const rawDesc = item.querySelector('description')?.textContent || '';
-    const parser2 = new DOMParser();
-    const descDoc = parser2.parseFromString(rawDesc, 'text/html');
-    const description = descDoc.body.textContent?.trim().slice(0, 280) || '';
+      if (isGoogleNews) {
+        // Google News: "Article Title - Source Name"
+        const sep = rawTitle.lastIndexOf(' - ');
+        if (sep > 0) { title = rawTitle.slice(0, sep).trim(); source = rawTitle.slice(sep + 3).trim(); }
+      }
 
-    return {
-      title,
-      description,
-      url: link,
-      image: null,
-      publishedAt: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(),
-      source: { name: source },
-      _regionId:  regionId  || null,
-      _subjectId: subjectId || null,
-      _imgIdx: (imgOffset + i) % 3,
-    };
+      // Strip HTML from description
+      const rawDesc  = item.querySelector('description')?.textContent || '';
+      const descDoc  = new DOMParser().parseFromString(rawDesc, 'text/html');
+      const description = (descDoc.body.textContent || '').trim().slice(0, 300);
+
+      let parsedDate;
+      try { parsedDate = pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(); }
+      catch { parsedDate = new Date().toISOString(); }
+
+      return {
+        title,
+        description,
+        url: link,
+        image: null,
+        publishedAt: parsedDate,
+        source: { name: source || 'Notícia' },
+        _regionId:  regionId,
+        _subjectId: subjectId,
+      };
+    }).filter(a => a.title && a.title.length > 5);
+  } catch {
+    return [];
+  }
+}
+
+// ─ Google News RSS ─
+function buildGoogleNewsURL(subjectQuery, region, afterDate, forceEnglish = false) {
+  const locale = forceEnglish
+    ? { hl: 'en-US', gl: 'US', ceid: 'US:en' }
+    : (REGION_LOCALE[region?.id] || { hl: 'pt-BR', gl: 'BR', ceid: 'BR:pt-BR' });
+  const parts = [];
+  if (subjectQuery) parts.push(subjectQuery);
+  if (region?.extraQ) parts.push(`(${region.extraQ})`);
+  if (afterDate)    parts.push(`after:${afterDate}`);
+  const q = parts.join(' ') || 'world news';
+  return `https://news.google.com/rss/search?${new URLSearchParams({ q, ...locale })}`;
+}
+
+async function fetchGoogleNews(subjectQuery, region, afterDate, forceEnglish = false) {
+  const url = buildGoogleNewsURL(subjectQuery, region, afterDate, forceEnglish);
+  const xml = await proxyFetch(url);
+  if (!xml) return [];
+  return parseRSS(xml, {
+    regionId: region?.id || null,
+    subjectId: null,
+    isGoogleNews: true,
   });
 }
 
-async function fetchOneCombo(subjectQuery, region, afterDate, regionId, subjectId, imgOffset) {
-  const rssUrl = buildRSSUrl(subjectQuery, region, afterDate);
-  const xml    = await proxyFetch(rssUrl);
-  return parseRSS(xml, regionId, subjectId, imgOffset);
+// ─ Direct feed ─
+async function fetchDirectFeed(feedInfo, subjectId) {
+  const xml = await proxyFetch(feedInfo.url);
+  if (!xml) return [];
+  return parseRSS(xml, {
+    regionId: null,
+    subjectId,
+    sourceName: feedInfo.name,
+    isGoogleNews: false,
+  });
 }
 
+// ─ Keyword match ─
+function articleMatchesSubjects(article, subjectIds) {
+  if (!subjectIds || subjectIds.length === 0) return true;
+  const haystack = `${article.title} ${article.description}`.toLowerCase();
+  return subjectIds.some(id => {
+    const kws = SUBJECT_KEYWORDS[id] || [];
+    return kws.some(kw => haystack.includes(kw.toLowerCase()));
+  });
+}
+
+// ─ Main fetch ─
 async function fetchNews() {
-  const regions  = state.regions.size  > 0 ? [...state.regions].map(getRegion)  : [null];
-  const subjects = state.subjects.size > 0 ? [...state.subjects].map(getSubject) : [null];
+  const selectedRegions  = state.regions.size  > 0 ? [...state.regions].map(getRegion)  : [];
+  const selectedSubjects = state.subjects.size > 0 ? [...state.subjects].map(getSubject) : [];
   const period   = getPeriod(state.period);
   const after    = isoFromDaysAgo(period.days);
+  const subjectIds = selectedSubjects.map(s => s?.id).filter(Boolean);
 
-  // Build a single combined query per region (one call per region, not per subject×region)
-  const subjectQuery = subjects
-    .filter(Boolean)
-    .map(s => `(${s.q})`)
-    .join(' OR ') || '';
+  const subjectQuery = selectedSubjects.filter(Boolean).map(s => `(${s.q})`).join(' OR ') || '';
 
-  const calls = regions.slice(0, 5).map((region, ri) =>
-    fetchOneCombo(subjectQuery, region, after, region?.id || null, subjects[0]?.id || null, ri * 10)
-  );
+  const calls = [];
+
+  // ① Google News por região (locale nativo + fallback inglês)
+  const gNewsRegions = selectedRegions.length > 0 ? selectedRegions : [null];
+  for (const region of gNewsRegions.slice(0, 4)) {
+    calls.push(fetchGoogleNews(subjectQuery, region, after, false));
+    // Se locale não for inglês, tenta em inglês também
+    const loc = REGION_LOCALE[region?.id]?.hl || '';
+    if (!loc.startsWith('en')) {
+      calls.push(fetchGoogleNews(subjectQuery, region, after, true));
+    }
+  }
+
+  // ② Feeds diretos por assunto
+  const usedDirectUrls = new Set();
+  const directSubjects = subjectIds.length > 0 ? subjectIds : Object.keys(DIRECT_FEEDS);
+  for (const sid of directSubjects.slice(0, 4)) {
+    const feeds = DIRECT_FEEDS[sid] || [];
+    for (const feed of feeds.slice(0, 2)) {
+      if (!usedDirectUrls.has(feed.url)) {
+        usedDirectUrls.add(feed.url);
+        calls.push(fetchDirectFeed(feed, sid));
+      }
+    }
+  }
+
+  // ③ Feeds diretos por região
+  for (const region of selectedRegions.slice(0, 3)) {
+    const feeds = REGION_FEEDS[region?.id] || [];
+    for (const feed of feeds.slice(0, 2)) {
+      if (!usedDirectUrls.has(feed.url)) {
+        usedDirectUrls.add(feed.url);
+        calls.push(fetchDirectFeed(feed, null));
+      }
+    }
+  }
 
   const results = await Promise.allSettled(calls);
 
-  // Merge & deduplicate
-  const seen = new Set();
+  // ─ Merge, dedup, filtra ─
+  const seen     = new Set();
   const articles = [];
-  let imgCounter = 0;
+  const cutoff   = Date.now() - period.days * 86400000;
+  let   imgCounter = 0;
+
   for (const r of results) {
     if (r.status !== 'fulfilled') continue;
     for (const a of r.value) {
-      if (!a.title || seen.has(a.url)) continue;
+      if (!a.title || seen.has(a.url) || a.url === '#') continue;
+
+      // Filtro de data
+      if (new Date(a.publishedAt) < cutoff) continue;
+
+      // Para feeds diretos (não Google News), filtra por palavras-chave de assunto
+      if (!a._regionId && subjectIds.length > 0 && !a._subjectId) {
+        if (!articleMatchesSubjects(a, subjectIds)) continue;
+      }
+
+      // Filtra por região via keywords para feeds globais (quando região selecionada)
+      // Google News já filtra por locale; feeds diretos são globais — sem filtro regional extra
+
       seen.add(a.url);
-      // Assign subject from filter if only one chosen; otherwise leave null
-      if (state.subjects.size === 1) a._subjectId = [...state.subjects][0];
-      // Assign image
+
+      // Infere assunto pelo keyword matching se não atribuído
+      if (!a._subjectId && subjectIds.length === 1) {
+        a._subjectId = subjectIds[0];
+      } else if (!a._subjectId && subjectIds.length > 1) {
+        a._subjectId = subjectIds.find(id => articleMatchesSubjects(a, [id])) || subjectIds[0];
+      }
+
+      // Infere região se não atribuída e só uma selecionada
+      if (!a._regionId && selectedRegions.length === 1) {
+        a._regionId = selectedRegions[0]?.id || null;
+      }
+
       a.image = subjectImage(a._subjectId, imgCounter++);
       articles.push(a);
     }
   }
 
-  // Client-side date filter
-  const cutoff = Date.now() - period.days * 86400000;
-  return articles
-    .filter(a => new Date(a.publishedAt) >= cutoff)
-    .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+  return articles.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
 }
 
 function filterDemoArticles() {
