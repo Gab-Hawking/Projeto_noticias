@@ -742,6 +742,18 @@ function attachEvents() {
     if (e.key === 'Enter') saveApiKey();
   });
 
+  // Demo link on initial state
+  document.getElementById('demoLinkBtn')?.addEventListener('click', e => {
+    e.preventDefault();
+    enableDemoMode();
+  });
+
+  // Change key button (error state)
+  document.getElementById('changeKeyBtn')?.addEventListener('click', showModal);
+
+  // Second retry button
+  document.getElementById('retryBtn2')?.addEventListener('click', performSearch);
+
   // Keyboard: close modal/sidebar on Escape
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
